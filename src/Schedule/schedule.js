@@ -13,7 +13,6 @@ import {
   DragAndDrop
 } from '@syncfusion/ej2-react-schedule';
 
-// Get OAuth Web Client ID from <meta> (index.html)
 function getClientIdFromMeta() {
   const el = document.querySelector('meta[name="google-signin-client_id"]');
   return el ? el.content : '';
@@ -40,7 +39,6 @@ function mapGoogleToScheduler(items) {
     .filter(Boolean);
 }
 
-// Convert Syncfusion event -> Google Calendar event resource
 function toGoogleEventResource(app) {
   if (app.IsAllDay) {
     const startDate = new Date(
