@@ -87,7 +87,7 @@ class Schedule extends React.Component {
       token: null,
       events: []
     };
-    this.calendarId = 'primary';
+    this.calendarId = 'primary';//USE YOUR CALENDAR_ID OR USE primary
     this.clientId = getClientIdFromMeta();
   }
 
