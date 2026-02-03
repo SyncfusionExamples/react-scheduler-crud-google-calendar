@@ -13,8 +13,6 @@ import {
   DragAndDrop
 } from '@syncfusion/ej2-react-schedule';
 
-let getClientId="YOUR_CLIENT_ID";//REPLACE YOUR CLIENT-ID
-
 // Map Google Calendar events -> Syncfusion Scheduler events
 function mapGoogleToScheduler(items) {
   return (items || [])
@@ -85,7 +83,7 @@ class Schedule extends React.Component {
       events: []
     };
     this.calendarId = 'YOUR_CALENDAR_ID';//USE YOUR CALENDAR_ID OR USE primary
-    this.clientId = getClientId;
+    this.clientId = 'YOUR_CLIENT_ID';//USE YOUR CLIENT_ID
   }
 
   componentDidMount() {

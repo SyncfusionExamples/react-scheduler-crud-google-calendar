@@ -24,11 +24,8 @@ To run this project follow the below steps,
     - Navigate to Navigation bar -> APIs and services  -> library.
         - Search for google calendar API.
         - Click enable.
-4. Replace your calendar-id in the schedule.js.
-    - If you use primary use default mail-id will be loaded.
-    - If you use calendar-id, the specific calendar  will load.
-5. Replace your client-id 
-4. Run this project using `npm start` command.
+4. Replace your **calendar-id** and **client-id** in the **schedule.js**.
+5. Run this project using `npm start` command.
 
 To generate the Client ID please visit the [quickstart](https://developers.google.com/youtube/v3/quickstart/js) page.
 
