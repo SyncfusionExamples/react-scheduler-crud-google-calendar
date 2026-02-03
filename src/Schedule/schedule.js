@@ -13,10 +13,7 @@ import {
   DragAndDrop
 } from '@syncfusion/ej2-react-schedule';
 
-function getClientIdFromMeta() {
-  const el = document.querySelector('meta[name="google-signin-client_id"]');
-  return el ? el.content : '';
-}
+let getClientId="YOUR_CLIENT_ID";//REPLACE YOUR CLIENT-ID
 
 // Map Google Calendar events -> Syncfusion Scheduler events
 function mapGoogleToScheduler(items) {
@@ -87,8 +84,8 @@ class Schedule extends React.Component {
       token: null,
       events: []
     };
-    this.calendarId = 'primary';//USE YOUR CALENDAR_ID OR USE primary
-    this.clientId = getClientIdFromMeta();
+    this.calendarId = 'me.jaichandran811@gmail.com';//USE YOUR CALENDAR_ID OR USE primary
+    this.clientId = getClientId;
   }
 
   componentDidMount() {

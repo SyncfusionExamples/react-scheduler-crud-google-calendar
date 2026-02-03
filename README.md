@@ -6,7 +6,28 @@ To run this project follow the below steps,
 
 1. Clone this project 
 2. Install packages using `npm install` 
-3. Apply your `YOUR_CALENDAR_ID`, and `YOUR_CLIENT_ID` in `schedule.js` file and `index.html` file.
+3. Create a google cloud console project.
+    - Go to google cloud console.
+    - Create a new project.
+    - Go to navigation bar.
+    - Click APIs and services.
+    - Click Configure consent screen.
+        - Click get started.
+        - Fill the details and click create.
+    - Navigate to Audience.
+        -   Add your mail-id in test-users.
+    - Navigate to clients.
+        - Create client.
+        - Application type - web application.
+        - Add http://localhost:3000/ to Authorised JavaScript origins and Authorised redirect URIs.
+        - Save the client-id for future uses.
+    - Navigate to Navigation bar -> APIs and services  -> library.
+        - Search for google calendar API.
+        - Click enable.
+4. Replace your calendar-id in the schedule.js.
+    - If you use primary use default mail-id will be loaded.
+    - If you use calendar-id, the specific calendar  will load.
+5. Replace your client-id 
 4. Run this project using `npm start` command.
 
 To generate the Client ID please visit the [quickstart](https://developers.google.com/youtube/v3/quickstart/js) page.
