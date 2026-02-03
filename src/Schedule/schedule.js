@@ -84,7 +84,7 @@ class Schedule extends React.Component {
       token: null,
       events: []
     };
-    this.calendarId = 'me.jaichandran811@gmail.com';//USE YOUR CALENDAR_ID OR USE primary
+    this.calendarId = 'YOUR_CALENDAR_ID';//USE YOUR CALENDAR_ID OR USE primary
     this.clientId = getClientId;
   }
 
