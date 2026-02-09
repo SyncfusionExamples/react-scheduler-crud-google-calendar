@@ -29,3 +29,4 @@ To run this project follow the below steps,
 
 To generate the Client ID please visit the [quickstart](https://developers.google.com/youtube/v3/quickstart/js) page.
 
+This integration allows you to sync events between the EJ2 Scheduler and your Google Calendar, enabling real-time updates and seamless data management. It demonstrates how to connect external APIs with Syncfusion components in a React environment. Make sure you enable the required Google Calendar API scopes and configure OAuth consent properly for smooth authentication and access. This project is ideal for developers looking to build calendar-based applications with cloud sync capabilities.
