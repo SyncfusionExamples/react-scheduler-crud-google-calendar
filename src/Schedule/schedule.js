@@ -13,20 +13,46 @@ import {
   DragAndDrop
 } from '@syncfusion/ej2-react-schedule';
 
-// Map Google Calendar events -> Syncfusion Scheduler events
+function parseDateOnlyToLocal(dateStr) {
+  const [y, m, d] = (dateStr || '').split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+function formatDateOnlyFromLocal(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
 function mapGoogleToScheduler(items) {
   return (items || [])
     .map((evt) => {
       const isAllDay = Boolean(evt.start?.date && !evt.start?.dateTime);
-      const start = evt.start?.dateTime || evt.start?.date;
-      const end = evt.end?.dateTime || evt.end?.date;
+
+      if (isAllDay) {
+        const start = parseDateOnlyToLocal(evt.start.date);
+        const end = parseDateOnlyToLocal(evt.end.date); 
+        return {
+          Id: evt.id,
+          Subject: evt.summary || '(No title)',
+          StartTime: start,
+          EndTime: end,
+          IsAllDay: true,
+          Location: evt.location,
+          Description: evt.description
+        };
+      }
+
+      const start = evt.start?.dateTime;
+      const end = evt.end?.dateTime;
       if (!start || !end) return null;
+
       return {
         Id: evt.id,
         Subject: evt.summary || '(No title)',
         StartTime: new Date(start),
         EndTime: new Date(end),
-        IsAllDay: isAllDay,
+        IsAllDay: false,
         Location: evt.location,
         Description: evt.description
       };
@@ -41,39 +67,44 @@ function toGoogleEventResource(app) {
       app.StartTime.getMonth(),
       app.StartTime.getDate()
     );
-    const endDate = new Date(
+    let endDate = new Date(
       app.EndTime.getFullYear(),
       app.EndTime.getMonth(),
       app.EndTime.getDate()
     );
-    if (+startDate === +endDate) {
+    if (+endDate <= +startDate) {
+      endDate = new Date(startDate);
       endDate.setDate(endDate.getDate() + 1);
     }
-    return {
+    const resource = {
       summary: app.Subject,
       location: app.Location,
       description: app.Description,
-      start: { date: startDate.toISOString().slice(0, 10) },
-      end: { date: endDate.toISOString().slice(0, 10) }
+      start: { date: formatDateOnlyFromLocal(startDate) },
+      end: { date: formatDateOnlyFromLocal(endDate) }
     };
+    if (app.RecurrenceRule) resource.recurrence = [`RRULE:${app.RecurrenceRule}`];
+    return resource;
   }
 
   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  return {
+  const resource = {
     summary: app.Subject,
     location: app.Location,
     description: app.Description,
-    start: {
-      dateTime: new Date(app.StartTime).toISOString(),
-      timeZone: tz
-    },
-    end: {
-      dateTime: new Date(app.EndTime).toISOString(),
-      timeZone: tz
-    }
+    start: { dateTime: new Date(app.StartTime).toISOString() },
+    end: { dateTime: new Date(app.EndTime).toISOString() }
   };
+  if (app.RecurrenceRule) {
+    resource.start.timeZone = tz;
+    resource.end.timeZone = tz;
+    resource.recurrence = [`RRULE:${app.RecurrenceRule}`];
+  }
+  return resource;
 }
 
+
+//
 class Schedule extends React.Component {
   constructor(props) {
     super(props);
@@ -82,8 +113,9 @@ class Schedule extends React.Component {
       token: null,
       events: []
     };
-    this.calendarId = 'YOUR_CALENDAR_ID';//USE YOUR CALENDAR_ID OR USE primary
-    this.clientId = 'YOUR_CLIENT_ID';//USE YOUR CLIENT_ID
+    this.calendarId = 'YOUR_CALENDAR_ID'; // USE YOUR CALENDAR_ID
+    this.clientId =
+      'YOUR_CLIENT_ID'; // USE YOUR CLIENT_ID
   }
 
   componentDidMount() {
@@ -109,7 +141,7 @@ class Schedule extends React.Component {
   signIn = () => {
     const tokenClient = window.google.accounts.oauth2.initTokenClient({
       client_id: this.clientId,
-      scope: 'openid email profile https://www.googleapis.com/auth/calendar',
+      scope: 'https://www.googleapis.com/auth/calendar',
       callback: async (resp) => {
         if (resp?.access_token) {
           this.setState({ token: resp.access_token }, async () => {
@@ -122,6 +154,9 @@ class Schedule extends React.Component {
     tokenClient.requestAccessToken();
   };
 
+  //
+
+  
   loadEvents = async () => {
     const { token } = this.state;
     if (!token) return;
@@ -150,7 +185,7 @@ class Schedule extends React.Component {
     const { token } = this.state;
 
     if (['eventCreate', 'eventChange', 'eventRemove'].includes(args.requestType)) {
-      args.cancel = true;
+      args.cancel = true; 
     } else {
       return;
     }
@@ -162,58 +197,55 @@ class Schedule extends React.Component {
       'Content-Type': 'application/json'
     };
 
-    if (args.requestType === 'eventCreate') {
-      const app = Array.isArray(args.data) ? args.data[0] : args.data;
-      const resource = toGoogleEventResource(app);
+    const pickApp = () => {
+      if (Array.isArray(args.data)) return args.data[0];
+      if (args.data) return args.data;
+      if (Array.isArray(args.changedRecords) && args.changedRecords.length)
+        return args.changedRecords[0];
+      return null;
+    };
 
+    if (args.requestType === 'eventCreate') {
+      const app = pickApp();
+      if (!app) return;
+
+      const resource = toGoogleEventResource(app);
       const res = await fetch(
         `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(
           this.calendarId
         )}/events`,
-        {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(resource)
-        }
+        { method: 'POST', headers, body: JSON.stringify(resource) }
       );
       if (!res.ok) return;
-
       await this.loadEvents();
     }
 
     if (args.requestType === 'eventChange') {
-      const app = Array.isArray(args.data) ? args.data[0] : args.data;
-      const resource = toGoogleEventResource(app);
+      const app = pickApp();
+      if (!app) return;
 
+      const resource = toGoogleEventResource(app);
       const res = await fetch(
         `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(
           this.calendarId
         )}/events/${encodeURIComponent(app.Id)}`,
-        {
-          method: 'PATCH',
-          headers,
-          body: JSON.stringify(resource)
-        }
+        { method: 'PATCH', headers, body: JSON.stringify(resource) }
       );
       if (!res.ok) return;
-
       await this.loadEvents();
     }
 
     if (args.requestType === 'eventRemove') {
-      const app = Array.isArray(args.data) ? args.data[0] : args.data;
+      const app = pickApp();
+      if (!app) return;
 
       const res = await fetch(
         `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(
           this.calendarId
         )}/events/${encodeURIComponent(app.Id)}`,
-        {
-          method: 'DELETE',
-          headers
-        }
+        { method: 'DELETE', headers }
       );
       if (!res.ok) return;
-
       await this.loadEvents();
     }
   };
@@ -240,7 +272,8 @@ class Schedule extends React.Component {
 
             <div className="schedule-container">
               <ScheduleComponent
-                ref={(schedule) => (this.scheduleObj = schedule)}
+                allowDragAndDrop={true}
+                allowResizing={true}
                 width="100%"
                 height="650px"
                 selectedDate={new Date()}
@@ -254,9 +287,7 @@ class Schedule extends React.Component {
                   <ViewDirective option="Month" />
                   <ViewDirective option="Agenda" />
                 </ViewsDirective>
-                <Inject
-                  services={[Day, Week, WorkWeek, Month, Agenda, Resize, DragAndDrop]}
-                />
+                <Inject services={[Day, Week, WorkWeek, Month, Agenda, Resize, DragAndDrop]} />
               </ScheduleComponent>
             </div>
           </div>
