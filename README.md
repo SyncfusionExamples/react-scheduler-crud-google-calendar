@@ -7,7 +7,7 @@ To run this project follow the below steps,
 1. Clone this project 
 2. Install packages using `npm install` 
 3. Create a google cloud console project.
-    - Go to google cloud console.
+    - Go to google cloud console using the following [link](https://console.cloud.google.com).
     - Create a new project.
     - Go to navigation bar.
     - Click APIs and services.
