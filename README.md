@@ -1,4 +1,4 @@
-# ej2-react-scheduler-integration-with-google-api
+# How can we perform the CRUD actions in EJ2-React Scheduler by integrating Google Calendar API
 
 This is the project to explain how can we perform the CRUD actions in EJ2-React Scheduler by integrating Google Calendar API.
 
